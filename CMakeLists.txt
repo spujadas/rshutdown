@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16)
 project(rshutdown C)
 
 # metadata
-set(PROJECT_VERSION 1.0)
+set(PROJECT_VERSION 1.0.0)
 
 # facil.io target (static library)
 set(FACIL_DIR "facil")
@@ -57,7 +57,7 @@ if(NOT CPACK_DEBIAN_PACKAGE_ARCHITECTURE)  # default if not set by toolchain fil
     set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
 endif()
 
-set(CPACK_DEBIAN_PACKAGE_RELEASE "1")  # revision, i.e. changes in packaging
+set(CPACK_DEBIAN_PACKAGE_RELEASE "0")  # revision, i.e. changes in packaging
 set(CPACK_DEBIAN_FILE_NAME "DEB-DEFAULT")
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Sébastien Pujadas <sebastien@pujadas.net>")
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "sudo")
