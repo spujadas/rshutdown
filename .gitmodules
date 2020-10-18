@@ -1,0 +1,6 @@
+[submodule "facil"]
+	path = facil
+	url = https://github.com/boazsegev/facil.io.git
+[submodule "log.c"]
+	path = log.c
+	url = https://github.com/rxi/log.c.git

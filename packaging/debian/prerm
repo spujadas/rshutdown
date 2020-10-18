@@ -1,0 +1,7 @@
+#!/bin/bash
+
+NAME=rshutdown
+SERVICE=${NAME}
+
+# stop service
+service ${SERVICE} stop

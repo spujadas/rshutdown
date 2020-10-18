@@ -1,0 +1,58 @@
+#!/bin/bash
+
+NAME=rshutdown
+USER=${NAME}
+GROUP=nogroup
+SERVICE=${NAME}
+
+EXECUTABLE=/usr/bin/${NAME}
+DEFAULT=/etc/default/${NAME}
+INIT=/etc/init.d/${NAME}
+SUDOERS=/etc/sudoers.d/${NAME}
+LOGROTATE=/etc/logrotate.d/${NAME}
+LOG_DIR=/var/log/${NAME}
+LOG=${LOG_DIR}/${NAME}.log
+
+
+### configure service
+
+# create random shutdown token
+sed -i -e 's/^RSHUTDOWN_TOKEN=/RSHUTDOWN_TOKEN='$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)'/' ${DEFAULT}
+
+
+### set up owners and permissions
+
+# create rshutdown user
+id -u ${USER} &>/dev/null || adduser --system --no-create-home ${USER}
+
+# create log directory
+mkdir -p ${LOG_DIR}
+chmod 755 ${LOG_DIR}
+touch ${LOG}
+
+# set owners
+chown ${USER}:${GROUP} ${LOG_DIR} ${LOG} ${DEFAULT}
+
+# set permissions on packaged files (if mangled by packaging system)
+chmod 600 ${DEFAULT}
+chmod 644 ${LOGROTATE}
+chmod 755 ${EXECUTABLE} ${INIT}
+chmod 0440 ${SUDOERS}
+
+# post-install sanity check on sudoers
+visudo -c
+EXIT_CODE=$?
+if [ $EXIT_CODE -eq 1 ]; then
+    echo "sudoers set-up failed - exiting"
+    rm -f ${SUDOERS}
+    exit 1
+fi
+
+
+### start service
+
+# start on boot
+update-rc.d ${SERVICE} defaults
+
+# start now
+service ${SERVICE} start

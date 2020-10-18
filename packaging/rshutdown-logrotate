@@ -1,0 +1,9 @@
+/var/log/departure.log {
+  monthly
+  rotate 12
+  compress
+  missingok
+  postrotate
+    service rshutdown restart
+  endscript
+}

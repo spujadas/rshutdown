@@ -1,0 +1,15 @@
+#!/bin/bash
+
+NAME=rshutdown
+USER=${NAME}
+SERVICE=${NAME}
+PID="/run/${NAME}.pid"
+
+# remove orphan PID file (if any)
+rm -f ${PID}
+
+# remove rshutdown user
+deluser ${USER}
+
+# remove init script links
+update-rc.d ${SERVICE} remove
