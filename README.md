@@ -10,8 +10,8 @@ It is primarily intended for shutting down headless [Raspberry Pi]()s cleanly wh
 
 Packages are available for:
 
-- x64 Debian-based Linux (`*-amd64.deb`), e.g. Ubuntu.
-- ARM Debian-based Linux (`*-armhf.deb`), e.g. [Raspberry Pi OS](https://www.raspberrypi.org/downloads/) (formerly known as Raspbian) and [DietPi](https://dietpi.com/) for Raspberry Pi.
+- x64 Debian-based Linux (`*_amd64.deb`), e.g. Ubuntu.
+- ARM Debian-based Linux (`*_armhf.deb`), e.g. [Raspberry Pi OS](https://www.raspberrypi.org/downloads/) (formerly known as Raspbian) and [DietPi](https://dietpi.com/) for Raspberry Pi.
 
 
 
@@ -22,7 +22,7 @@ Download a .deb package file for your architecture from the Releases page.
 Install the package using:
 
 ```
-$ sudo apt install ./rshutdown-<version>-<arch>.deb
+$ sudo apt install ./rshutdown_<version>_<arch>.deb
 ```
 
 rshutdown is set up as a service (named `rshutdown`) when installed from one of these packages, and it will automatically start on boot.
