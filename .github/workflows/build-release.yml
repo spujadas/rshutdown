@@ -1,0 +1,82 @@
+name: Build and release x64 and ARM deb packages
+
+on:
+  push:
+    tags:
+      - '*'
+  workflow_dispatch:
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Create build environment (x64 and ARM)
+        run: |
+          mkdir -p ${{ github.workspace }}/build/linux-x64
+          mkdir -p ${{ github.workspace }}/build/linux-arm
+
+      - name: Install cross-compilation toolchain
+        run: |
+          curl -L https://sourceforge.net/projects/raspberry-pi-cross-compilers/files/Raspberry%20Pi%20GCC%20Cross-Compiler%20Toolchains/Stretch/GCC%206.3.0/Raspberry%20Pi%201%2C%20Zero/cross-gcc-6.3.0-pi_0-1.tar.gz/download | tar -xz -C /opt
+
+      - name: Configure CMake (x64)
+        shell: bash
+        working-directory: ${{ github.workspace }}/build/linux-x64
+        run: cmake ${{ github.workspace }}
+
+      - name: Build deb package (x64)
+        id: build_deb_x64
+        shell: bash
+        working-directory: ${{ github.workspace }}/build/linux-x64
+        run: |
+          make -j4 package
+          echo "::set-output name=X64_DEB_PACKAGE::$(basename $(find . -maxdepth 1 -name *.deb))"
+
+      - name: Configure CMake (ARM)
+        shell: bash
+        working-directory: ${{ github.workspace }}/build/linux-arm
+        run: cmake -DCMAKE_TOOLCHAIN_FILE=${{ github.workspace }}/rpi-toolchain.cmake ${{ github.workspace }}
+
+      - name: Build deb package (ARM)
+        id: build_deb_arm
+        shell: bash
+        working-directory: ${{ github.workspace }}/build/linux-arm
+        run: |
+          make -j4 package
+          echo "::set-output name=ARM_DEB_PACKAGE::$(basename $(find . -maxdepth 1 -name *.deb))"
+
+      - name: Create release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+
+      - name: Upload release asset (x64)
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          asset_path: ${{ github.workspace }}/build/linux-x64/${{ steps.build_deb_x64.outputs.X64_DEB_PACKAGE }}
+          asset_name: ${{ steps.build_deb_x64.outputs.X64_DEB_PACKAGE }}
+          asset_content_type: application/vnd.debian.binary-package
+
+      - name: Upload release asset (ARM)
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ github.workspace }}/build/linux-arm/${{ steps.build_deb_arm.outputs.ARM_DEB_PACKAGE }}
+          asset_name: ${{ steps.build_deb_arm.outputs.ARM_DEB_PACKAGE }}
+          asset_content_type: application/vnd.debian.binary-package
